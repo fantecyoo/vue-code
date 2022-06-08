@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">{{message}}{{foo}}{{zoo}}</div>
+    <script src="./dist/vue.js"></script>
+    <script>
+      var mixin2 = {
+        data: function () {
+          return {
+            message: "hello mixin2",
+            foo: "abc",
+            zoo: "zoo",
+          };
+        },
+      };
+      var mixin = {
+        mixins: [mixin2],
+        data: function () {
+          return {
+            message: "hello mixin1",
+            foo: "abc",
+          };
+        },
+      };
+      let app = new Vue({
+        el: "#app",
+        mixins: [mixin],
+        data() {
+          return {
+            message: "hello",
+          };
+        },
+      });
+      console.log(app);
+      performance.getEntriesByName("vue <Root> init");
+    </script>
+  </body>
+</html>
