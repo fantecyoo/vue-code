@@ -1611,7 +1611,6 @@
     }
     function mergeField(key) {
       var strat = strats[key] || defaultStrat;
-      console.log(key, strat);
       options[key] = strat(parent[key], child[key], vm, key);
     }
     return options;
@@ -3274,12 +3273,11 @@
     }
 
     var baseCtor = context.$options._base;
-
     // plain options object: turn it into a constructor
     if (isObject(Ctor)) {
       Ctor = baseCtor.extend(Ctor);
     }
-
+    console.log("创建组件的构造函数");
     // if at this stage it's not a constructor or an async component factory,
     // reject.
     if (typeof Ctor !== "function") {
@@ -3351,7 +3349,6 @@
         data.slot = slot;
       }
     }
-
     // install component management hooks onto the placeholder node
     installComponentHooks(data);
 
@@ -3468,6 +3465,7 @@
   }
 
   function _createElement(context, tag, data, children, normalizationType) {
+    console.log("h函数入口");
     if (isDef(data) && isDef(data.__ob__)) {
       warn(
         "Avoid using observed data object as vnode data: " +
@@ -3479,6 +3477,7 @@
       return createEmptyVNode();
     }
     // object syntax in v-bind
+    // 动态组件
     if (isDef(data) && isDef(data.is)) {
       tag = data.is;
     }
@@ -3521,6 +3520,7 @@
             context
           );
         }
+        console.log("创建普通组件");
         vnode = new VNode(
           config.parsePlatformTagName(tag),
           data,
@@ -3534,15 +3534,18 @@
         isDef((Ctor = resolveAsset(context.$options, "components", tag)))
       ) {
         // component
+        console.log("创建Vue组件", "Ctor", Ctor);
         vnode = createComponent(Ctor, data, context, children, tag);
       } else {
         // unknown or unlisted namespaced elements
         // check at runtime because it may get assigned a namespace when its
         // parent normalizes children
+        console.log("创建普通组件");
         vnode = new VNode(tag, data, children, undefined, undefined, context);
       }
     } else {
       // direct component options / constructor
+      console.log("创建Vue组件", "tag", tag);
       vnode = createComponent(tag, data, context, children);
     }
     if (Array.isArray(vnode)) {
@@ -3595,6 +3598,7 @@
   /*  */
 
   function initRender(vm) {
+    console.log("初始化和render相关的属性和方法");
     vm._vnode = null; // the root of the child tree
     vm._staticTrees = null; // v-once cached trees
     var options = vm.$options;
@@ -3653,6 +3657,7 @@
     };
 
     Vue.prototype._render = function () {
+      console.log("_render函数");
       var vm = this;
       var ref = vm.$options;
       var render = ref.render;
@@ -3672,11 +3677,12 @@
       // render self
       var vnode;
       try {
-        // There's no need to maintain a stack because all render fns are called
+        // There's no need to maintain a stack beScause all render fns are called
         // separately from one another. Nested component's render fns are called
         // when parent component is patched.
         currentRenderingInstance = vm;
         vnode = render.call(vm._renderProxy, vm.$createElement);
+        console.log("成功创建虚拟dom", deepClone(vnode));
       } catch (e) {
         handleError(e, vm, "render");
         // return error render result,
@@ -4069,6 +4075,7 @@
 
   function lifecycleMixin(Vue) {
     Vue.prototype._update = function (vnode, hydrating) {
+      console.log("_update函数", "vnode", deepClone(vnode));
       var vm = this;
       var prevEl = vm.$el;
       var prevVnode = vm._vnode;
@@ -4078,9 +4085,11 @@
       // based on the rendering backend used.
       if (!prevVnode) {
         // initial render
+        console.log("首次渲染入口");
         vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */);
       } else {
         // updates
+        console.log("更新渲染入口");
         vm.$el = vm.__patch__(prevVnode, vnode);
       }
       restoreActiveInstance();
@@ -4151,6 +4160,15 @@
   }
 
   function mountComponent(vm, el, hydrating) {
+    console.log(
+      "mountComponent方法入口(生成render函数后)",
+      "vm:",
+      deepClone(vm),
+      "el:",
+      deepClone(el),
+      "hydrating",
+      deepClone(hydrating)
+    );
     vm.$el = el;
     if (!vm.$options.render) {
       vm.$options.render = createEmptyVNode;
@@ -4176,6 +4194,7 @@
       }
     }
     callHook(vm, "beforeMount");
+    console.log("生命周期 - beforeMount");
 
     var updateComponent;
     /* istanbul ignore if */
@@ -4562,6 +4581,7 @@
    * This is used for both the $watch() api and directives.
    */
   var Watcher = function Watcher(vm, expOrFn, cb, options, isRenderWatcher) {
+    console.log("Watch构造函数");
     this.vm = vm;
     if (isRenderWatcher) {
       vm._watcher = this;
@@ -4775,6 +4795,7 @@
   }
 
   function initState(vm) {
+    console.log("初始化data，method，props，computed，watch");
     vm._watchers = [];
     var opts = vm.$options;
     if (opts.props) {
@@ -5121,6 +5142,7 @@
 
   function initMixin(Vue) {
     Vue.prototype._init = function (options) {
+      console.log("Init入口 options:", options);
       var vm = this;
       // a uid
       vm._uid = uid$3++;
@@ -5140,13 +5162,16 @@
         // optimize internal component instantiation
         // since dynamic options merging is pretty slow, and none of the
         // internal component options needs special treatment.
+        console.log("初始化内部的组件：initInternalComponent");
         initInternalComponent(vm, options);
       } else {
+        console.log("根组件mergeOptions");
         vm.$options = mergeOptions(
           resolveConstructorOptions(vm.constructor),
           options || {},
           vm
         );
+        console.log("合并后的options", deepClone(vm.$options));
       }
       /* istanbul ignore else */
       {
@@ -5157,10 +5182,12 @@
       initLifecycle(vm);
       initEvents(vm);
       initRender(vm);
+      console.log("生命周期 - beforeCreate", deepClone(vm));
       callHook(vm, "beforeCreate");
       initInjections(vm); // resolve injections before data/props
       initState(vm);
       initProvide(vm); // resolve provide after data/props
+      console.log("生命周期 - created", deepClone(vm));
       callHook(vm, "created");
 
       /* istanbul ignore if */
@@ -5171,6 +5198,7 @@
       }
 
       if (vm.$options.el) {
+        console.log("挂载Vue el：", vm.$options.el);
         vm.$mount(vm.$options.el);
       }
     };
@@ -5238,6 +5266,7 @@
     if (!(this instanceof Vue)) {
       warn("Vue is a constructor and should be called with the `new` keyword");
     }
+    console.log("Vue入口");
     this._init(options);
   }
 
@@ -6112,6 +6141,13 @@
       ownerArray,
       index
     ) {
+      console.log(
+        "将vnode渲染为真实DOM",
+        deepClone(vnode),
+        deepClone(insertedVnodeQueue),
+        deepClone(parentElm),
+        deepClone(refElm)
+      );
       if (isDef(vnode.elm) && isDef(ownerArray)) {
         // This vnode was used in a previous render!
         // now it's used as a new node, overwriting its elm would cause
@@ -6122,6 +6158,7 @@
       }
 
       vnode.isRootInsert = !nested; // for transition enter check
+
       if (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) {
         return;
       }
@@ -6149,6 +6186,7 @@
         vnode.elm = vnode.ns
           ? nodeOps.createElementNS(vnode.ns, tag)
           : nodeOps.createElement(tag, vnode);
+
         setScope(vnode);
 
         /* istanbul ignore if */
@@ -6184,6 +6222,7 @@
         // component also has set the placeholder vnode's elm.
         // in that case we can just return the element and be done.
         if (isDef(vnode.componentInstance)) {
+          console.log("组件渲染成真实dom");
           initComponent(vnode, insertedVnodeQueue);
           insert(parentElm, vnode.elm, refElm);
           if (isTrue(isReactivated)) {
@@ -6812,6 +6851,13 @@
     }
 
     return function patch(oldVnode, vnode, hydrating, removeOnly) {
+      console.log(
+        "patch函数入口",
+        "oldVnode",
+        deepClone(oldVnode),
+        "vnode",
+        deepClone(vnode)
+      );
       if (isUndef(vnode)) {
         if (isDef(oldVnode)) {
           invokeDestroyHook(oldVnode);
@@ -6870,6 +6916,7 @@
           var oldElm = oldVnode.elm;
           var parentElm = nodeOps.parentNode(oldElm);
 
+          console.log("将el转换成旧的vnode");
           // create new node
           createElm(
             vnode,
@@ -12623,6 +12670,7 @@
 
   var mount = Vue.prototype.$mount;
   Vue.prototype.$mount = function (el, hydrating) {
+    console.log("$mount入口", "el:", el, "hydrating:", hydrating);
     el = el && query(el);
 
     /* istanbul ignore if */
@@ -12641,6 +12689,7 @@
         if (typeof template === "string") {
           if (template.charAt(0) === "#") {
             template = idToTemplate(template);
+            console.dir(template);
             /* istanbul ignore if */
             if (!template) {
               warn(
@@ -12665,7 +12714,6 @@
         if (config.performance && mark) {
           mark("compile");
         }
-
         var ref = compileToFunctions(
           template,
           {
@@ -12681,6 +12729,7 @@
         var staticRenderFns = ref.staticRenderFns;
         options.render = render;
         options.staticRenderFns = staticRenderFns;
+        console.log("生成render函数", deepClone(options));
 
         /* istanbul ignore if */
         if (config.performance && mark) {
@@ -12707,6 +12756,42 @@
   }
 
   Vue.compile = compileToFunctions;
-
+  let deepClone = function (obj) {
+    let fn = function (obj, hash = new WeakMap()) {
+      if (
+        Object.prototype.toString.call(obj) !== "[object Object]" &&
+        Object.prototype.toString.call(obj) !== "[object Array]"
+      ) {
+        return obj;
+      }
+      if (hash.has(obj)) {
+        return hash.get(obj);
+      }
+      let result = Array.isArray(obj) ? [] : {};
+      hash.set(obj, result);
+      for (let key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          if (
+            Array.isArray(obj[key]) ||
+            Object.prototype.toString.call(obj) === "[object Object]"
+          ) {
+            list.push(() => {
+              result[key] = fn(obj[key], hash);
+            });
+          } else {
+            result[key] = obj[key];
+          }
+        }
+      }
+      return result;
+    };
+    let hash = new WeakMap();
+    let list = [];
+    let newObj = fn(obj, hash);
+    while (list.length) {
+      list.shift()();
+    }
+    return newObj;
+  };
   return Vue;
 });
