@@ -3276,8 +3276,8 @@
     // plain options object: turn it into a constructor
     if (isObject(Ctor)) {
       Ctor = baseCtor.extend(Ctor);
+      console.log("基于组件对象创建render函数");
     }
-    console.log("创建组件的构造函数");
     // if at this stage it's not a constructor or an async component factory,
     // reject.
     if (typeof Ctor !== "function") {
@@ -3534,7 +3534,7 @@
         isDef((Ctor = resolveAsset(context.$options, "components", tag)))
       ) {
         // component
-        console.log("创建Vue组件", "Ctor", Ctor);
+        console.log("创建Vue组件", "Ctor", deepClone(Ctor));
         vnode = createComponent(Ctor, data, context, children, tag);
       } else {
         // unknown or unlisted namespaced elements
@@ -3545,7 +3545,7 @@
       }
     } else {
       // direct component options / constructor
-      console.log("创建Vue组件", "tag", tag);
+      console.log("创建Vue组件", "tag", deepClone(tag));
       vnode = createComponent(tag, data, context, children);
     }
     if (Array.isArray(vnode)) {
@@ -3683,6 +3683,10 @@
         currentRenderingInstance = vm;
         vnode = render.call(vm._renderProxy, vm.$createElement);
         console.log("成功创建虚拟dom", deepClone(vnode));
+        console.log(
+          "vnode.componentOptions",
+          deepClone(vnode.componentOptions)
+        );
       } catch (e) {
         handleError(e, vm, "render");
         // return error render result,
@@ -4085,11 +4089,11 @@
       // based on the rendering backend used.
       if (!prevVnode) {
         // initial render
-        console.log("首次渲染入口");
+        console.log("首次渲染入口:vm.$el,vnode");
         vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */);
       } else {
         // updates
-        console.log("更新渲染入口");
+        console.log("更新渲染入口:prevVnode,vnode");
         vm.$el = vm.__patch__(prevVnode, vnode);
       }
       restoreActiveInstance();
@@ -5323,6 +5327,7 @@
      * Class inheritance
      */
     Vue.extend = function (extendOptions) {
+      console.log("创建Vue构造函数");
       extendOptions = extendOptions || {};
       var Super = this;
       var SuperId = Super.cid;
